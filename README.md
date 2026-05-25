@@ -316,7 +316,7 @@ deepseek <prompt>     # Uses Fireworks DeepSeek
 
 ## 🔐 Security Notes
 
-- **API keys are read from environment variables**, never stored in config files (except temporarily during sync)
+- **API keys are read from environment variables** and persisted in the config file with owner-only permissions (`0600`)
 - The sync script extracts keys from environment based on endpoint URL
 - **Never commit your `.env` file or config with keys**
 - The `install.sh` script checks for leaked keys before installation

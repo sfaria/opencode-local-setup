@@ -71,6 +71,7 @@ export async function readConfig(configPath = getConfigPath()) {
 export async function writeConfig(cfg, configPath = getConfigPath()) {
   await fs.mkdir(path.dirname(configPath), { recursive: true });
   await fs.writeFile(configPath, JSON.stringify(cfg, null, 2) + "\n", "utf8");
+  await fs.chmod(configPath, 0o600);
 }
 
 export function getProviderMap(cfg) {
