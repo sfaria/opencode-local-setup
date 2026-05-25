@@ -62,10 +62,13 @@ for script_name in providers.mjs sync-core.mjs sync-provider.mjs sync-local-mode
     chmod +x "${CONFIG_DIR}/${script_name}"
 done
 
-# Install shell wrapper script
+# Install shell wrapper scripts
 WRAPPER_SCRIPT="${CONFIG_DIR}/opencode-functions.sh"
 cp "${REPO_DIR}/scripts/opencode-wrapper.sh" "$WRAPPER_SCRIPT"
 chmod +x "$WRAPPER_SCRIPT"
+
+ZSH_WRAPPER_SCRIPT="${CONFIG_DIR}/opencode-functions.zsh"
+cp "${REPO_DIR}/scripts/opencode-wrapper.zsh" "$ZSH_WRAPPER_SCRIPT"
 
 # Create basic config if it doesn't exist
 if [ ! -f "${CONFIG_DIR}/opencode.json" ]; then
@@ -132,6 +135,29 @@ if [ -f "$BASHRC" ]; then
     echo "$END_MARKER" >> "$BASHRC"
 fi
 
+# Add zsh wrapper source block to ~/.zshrc
+ZSHRC="$HOME/.zshrc"
+if [ -f "$ZSHRC" ]; then
+    START_MARKER="# >>> opencode-local-setup >>>"
+    END_MARKER="# <<< opencode-local-setup <<<"
+
+    cp "$ZSHRC" "${ZSHRC}.bak"
+
+    # Replace previously managed block
+    sed -i "/^${START_MARKER}$/,/^${END_MARKER}$/d" "$ZSHRC"
+
+    echo "📄 Adding wrapper source block to $ZSHRC..."
+    echo "" >> "$ZSHRC"
+    echo "$START_MARKER" >> "$ZSHRC"
+    if [ "$TAILSCALE_DISCOVERY_ENABLED" = "1" ]; then
+        echo "export OPENCODE_TAILSCALE_DISCOVERY=1" >> "$ZSHRC"
+    fi
+    echo "if [ -f \"$ZSH_WRAPPER_SCRIPT\" ]; then" >> "$ZSHRC"
+    echo "  source \"$ZSH_WRAPPER_SCRIPT\"" >> "$ZSHRC"
+    echo "fi" >> "$ZSHRC"
+    echo "$END_MARKER" >> "$ZSHRC"
+fi
+
 # Test the setup
 echo ""
 echo "🔍 Testing setup..."
@@ -153,15 +179,23 @@ echo "📋 Next steps:"
 echo "   1. Edit: $CONFIG_DIR/.env.local"
 echo "      Set LOCAL_API_BASE to your AI server URL"
 echo ""
-echo "   2. Sync models manually (optional):"
+echo "   2. Reload your shell config:"
+if [ -f "$HOME/.zshrc" ]; then
+echo "      source ~/.zshrc    # zsh"
+fi
+if [ -f "$HOME/.bashrc" ]; then
+echo "      source ~/.bashrc   # bash"
+fi
+echo ""
+echo "   3. Sync models manually (optional):"
 echo "      node $LAUNCH_SYNC_SCRIPT"
 echo ""
-echo "   3. Run OpenCode with auto-sync (syncs on launch and exit):"
+echo "   4. Run OpenCode with auto-sync (syncs on launch and exit):"
 echo "      opencode"
 echo ""
-echo "   4. In OpenCode, use /models to see your local models"
+echo "   5. In OpenCode, use /models to see your local models"
 echo ""
-echo "   5. Use shortcuts:"
+echo "   6. Use shortcuts:"
 echo "      oc-local <prompt> # Use local provider"
 echo "      deepseek <prompt> # Use Fireworks DeepSeek"
 echo ""
