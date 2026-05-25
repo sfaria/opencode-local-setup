@@ -87,6 +87,23 @@ if [ ! -f "${CONFIG_DIR}/opencode.json" ]; then
 EOF
 fi
 
+# Ask about Tailscale discovery (only if tailscale is present)
+TAILSCALE_DISCOVERY_ENABLED=0
+if command -v tailscale &> /dev/null; then
+    echo ""
+    echo "🔍 Tailscale detected."
+    echo "   Auto-discovery scans online Tailscale peers for LLM servers on launch/exit."
+    echo "   This TCP-probes ~223 ports per peer and sends GET /v1/models to open ports."
+    read -p "   Enable Tailscale peer auto-discovery? (y/n): " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        TAILSCALE_DISCOVERY_ENABLED=1
+        echo "✅ Tailscale discovery enabled (OPENCODE_TAILSCALE_DISCOVERY=1)"
+    else
+        echo "⏭️  Tailscale discovery disabled (set OPENCODE_TAILSCALE_DISCOVERY=1 to enable later)"
+    fi
+fi
+
 # Add bash wrapper source block to ~/.bashrc
 BASHRC="$HOME/.bashrc"
 if [ -f "$BASHRC" ]; then
@@ -100,14 +117,15 @@ if [ -f "$BASHRC" ]; then
     sed -i "/^${START_MARKER}$/,/^${END_MARKER}$/d" "$BASHRC"
 
     echo "📄 Adding wrapper source block to $BASHRC..."
-    cat >> "$BASHRC" << EOF
-
-$START_MARKER
-if [ -f "$WRAPPER_SCRIPT" ]; then
-  source "$WRAPPER_SCRIPT"
-fi
-$END_MARKER
-EOF
+    echo "" >> "$BASHRC"
+    echo "$START_MARKER" >> "$BASHRC"
+    if [ "$TAILSCALE_DISCOVERY_ENABLED" = "1" ]; then
+        echo "export OPENCODE_TAILSCALE_DISCOVERY=1" >> "$BASHRC"
+    fi
+    echo "if [ -f \"$WRAPPER_SCRIPT\" ]; then" >> "$BASHRC"
+    echo "  source \"$WRAPPER_SCRIPT\"" >> "$BASHRC"
+    echo "fi" >> "$BASHRC"
+    echo "$END_MARKER" >> "$BASHRC"
 fi
 
 # Test the setup

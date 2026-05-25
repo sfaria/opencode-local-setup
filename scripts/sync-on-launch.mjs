@@ -182,7 +182,7 @@ function isTcpPortOpen(host, port, timeoutMs) {
 }
 
 async function discoverTailscaleTargets(cfg, seenBaseURLs) {
-  if (process.env.OPENCODE_TAILSCALE_DISCOVERY === "0") {
+  if (process.env.OPENCODE_TAILSCALE_DISCOVERY !== "1") {
     return [];
   }
 
