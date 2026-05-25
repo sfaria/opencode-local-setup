@@ -110,8 +110,12 @@ if [ -f "$BASHRC" ]; then
     START_MARKER="# >>> opencode-local-setup >>>"
     END_MARKER="# <<< opencode-local-setup <<<"
 
-    # Remove legacy shortcut that overrides bash's local builtin
-    sed -i '/^local() {/,/^}$/d' "$BASHRC"
+    cp "$BASHRC" "${BASHRC}.bak"
+
+    # Remove legacy shortcut that overrides bash's local builtin.
+    # Matches only the specific 3-line form that was previously installed
+    # (body must contain "opencode"), so unrelated user functions are safe.
+    perl -i -0pe 's/^local\(\) \{\n\s+opencode[^\n]*\n\}\n?//m' "$BASHRC"
 
     # Replace previously managed block
     sed -i "/^${START_MARKER}$/,/^${END_MARKER}$/d" "$BASHRC"
