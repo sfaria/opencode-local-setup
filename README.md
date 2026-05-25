@@ -118,6 +118,9 @@ export OPENCODE_CONFIG="/path/to/config.json"
 
 # Custom config directory (optional)
 export XDG_CONFIG_HOME="/home/user/my-configs"
+
+# Tailscale peer auto-discovery (opt-in, default off)
+export OPENCODE_TAILSCALE_DISCOVERY=1  # Set to 1 to enable; unset or 0 to disable
 ```
 
 ### Configuration Files
@@ -356,7 +359,7 @@ fi
 
 This keeps shell changes isolated and refreshes every configured provider/checkpoint so both the model list and model display names stay current when you start and close OpenCode.
 
-If `tailscale` is installed, launch sync also auto-discovers online Tailscale peers and probes OpenAI-compatible endpoints on ports `1200-1300`, `8000-8100`, and `8880-8900`. Discovered providers are added as `Tailscale - <host>:<port>`.
+Tailscale peer auto-discovery is **opt-in** (disabled by default). When `OPENCODE_TAILSCALE_DISCOVERY=1` is set, launch sync probes online Tailscale peers for OpenAI-compatible endpoints on ports `1200-1300`, `8000-8100`, and `8880-8900`. Discovered providers are added as `Tailscale - <host>:<port>`. The installer will prompt to enable this if `tailscale` is detected.
 
 ### Cron Job (Optional)
 
